@@ -19,7 +19,7 @@ const io = socketIO(server, {
   },
 });
 const Game = require("./db/racing");
-const { getQuote, getQuoteOfLength } = require("./Utilities/getQuotes");
+const { getBasedOnDifficulty } = require("./Utilities/getQuotes");
 
 const PORT = 5000;
 
@@ -34,19 +34,21 @@ const lobbies = {};
 // Event to handle new connections
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
-  //   clients.push(socket.id);
-  // Event to handle joining a lobby
-  socket.on("joinLobby", async (type) => {
-    mode = type.type;
-    difficulty = type.difficulty;
-    console.log(mode);
+  socket.on("joinLobby", async (player) => {
+    mode = player.mode;
+    difficulty = player.difficulty;
+    userName = player.userName;
     if (mode === "Single") {
-      const data = await getQuote();
-      console.log(data);
+      let game = new Game();
+      const data = await getBasedOnDifficulty(difficulty);
+      game.words = data;
+      let player = {
+        socketId: socket.id,
+        userName: userName,
+      };
+      game.players.push(player);
+      game = await game.save();
     }
-    // socket.join(lobbyId);
-    // console.log(`Client ${socket.id} joined lobby ${lobbyId}`);
-    // socket.emit("lobbyData", lobbies[lobbyId]);
   });
 
   // Event to handle leaving a lobby
