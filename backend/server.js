@@ -18,7 +18,7 @@ const io = socketIO(server, {
     methods: ["GET", "POST"],
   },
 });
-const Game = require("./db/racing");
+const { Game, Lobby } = require("./db/racing");
 const { getBasedOnDifficulty } = require("./Utilities/getQuotes");
 
 const PORT = 5000;
@@ -46,8 +46,46 @@ io.on("connection", (socket) => {
         socketId: socket.id,
         userName: userName,
       };
+      game.startTime = Date.now();
       game.players.push(player);
       game = await game.save();
+      lobbyId = game._id.toString();
+      socket.join(lobbyId);
+      io.to(lobbyId).emit("gameUpdates", game);
+      console.log(lobbyId);
+    } else {
+      let player = {
+        socketId: socket.id,
+        userName: userName,
+      };
+      let lobby = await Lobby.findOne({
+        expireTime: { $gt: Date.now() },
+        difficulty: difficulty,
+      });
+      if (lobby) {
+        lobby.game.players.push(player);
+        socket.join(lobby.lobbyId);
+        io.to(lobby.lobbyId).emit("gameUpdates", lobby.game);
+        return;
+      }
+      let game = new Game();
+      const data = await getBasedOnDifficulty(difficulty);
+      game.words = data;
+      game.startTime = Date.now();
+      game.expireTime = game.startTime + 15000;
+      game.players.push(player);
+      game = await game.save();
+      let lobbyId = game._id.toString();
+      let expireTime = game.startTime + 15000;
+      let newLobby = new Lobby({
+        lobbyId: lobbyId,
+        expireTime: expireTime,
+        game: game,
+        difficulty: difficulty,
+      });
+      newLobby.save();
+      socket.join(lobbyId);
+      io.to(lobbyId).emit("gameUpdates", game);
     }
   });
 

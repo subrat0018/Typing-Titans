@@ -5,7 +5,7 @@ const PlayerSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  sockId: { type: String },
+  socketId: { type: String },
   WPM: { type: Number, default: -1 },
   userName: { type: String },
 });
@@ -15,5 +15,12 @@ const GameSchema = new mongoose.Schema({
   players: [PlayerSchema],
   startTime: Number,
 });
-
-module.exports = mongoose.model("Game", GameSchema);
+const LobbySchema = new mongoose.Schema({
+  lobbyId: String,
+  expireTime: Number,
+  game: GameSchema,
+  difficulty: String,
+});
+const Game = mongoose.model("Game", GameSchema);
+const Lobby = mongoose.model("Loby", LobbySchema);
+module.exports = { Game, Lobby };

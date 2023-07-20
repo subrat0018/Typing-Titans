@@ -29,7 +29,7 @@ getEasy = async () => {
   return res.data[0].content;
 };
 getMedium = async () => {
-  let res = await axios.get(baseUrl + "/minLength=100" + "&maxLength=150");
+  let res = await axios.get(baseUrl + "?minLength=100" + "&maxLength=150");
   return res.data[0].content;
 };
 getHard = async () => {
