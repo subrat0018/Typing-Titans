@@ -23,7 +23,7 @@ import {
   DEFAULT_SOUND_TYPE_KEY,
 } from "../Components/features/sound/sound";
 
-const PlayGround = () => {
+const PlayGround = ({ quote, id, players, type }) => {
   // localStorage persist theme setting
   const [theme, setTheme] = useState(() => {
     const stickyTheme = window.localStorage.getItem("theme");
@@ -179,6 +179,9 @@ const PlayGround = () => {
         <Logo isFocusedMode={isFocusedMode} isMusicMode={isMusicMode}></Logo>
         {isWordGameMode && (
           <TypeBox
+            quote={quote}
+            type={type}
+            players={players}
             textInputRef={textInputRef}
             isFocusedMode={isFocusedMode}
             soundMode={soundMode}

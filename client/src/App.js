@@ -7,7 +7,13 @@ import { useEffect } from "react";
 import socket from "./socketConfig";
 
 function App() {
-  const [gameState, setGameState] = useState({ id: "", players: [] });
+  const [gameState, setGameState] = useState({
+    id: "",
+    players: [],
+    quote: "",
+    type: "",
+  });
+  console.log(gameState);
   return (
     <BrowserRouter>
       <Routes>
@@ -17,7 +23,14 @@ function App() {
         />
         <Route
           path="/playground/:gameId"
-          element={<PlayGround gameState={gameState} />}
+          element={
+            <PlayGround
+              quote={gameState.quote}
+              id={gameState.id}
+              players={gameState.players}
+              type={gameState.type}
+            />
+          }
         />
       </Routes>
     </BrowserRouter>

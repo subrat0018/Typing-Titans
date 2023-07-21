@@ -25,11 +25,22 @@ function getRandomPunctuation() {
   return punctuationMarks[randomIndex];
 }
 getEasy = async () => {
-  let res = await axios.get(baseUrl);
-  return res.data[0].content;
+  let res = await axios.get(baseUrl + "?minLength=200" + "&maxLength=500");
+  let data = res.data[0].content;
+  newData = "";
+  for (let i = 0; i < data.length; i++) {
+    if (data.charCodeAt(i) >= 65 && data.charCodeAt(i) <= 90) {
+      newData += data.charAt(i).toLowerCase();
+    } else if (data.charCodeAt(i) >= 97 && data.charCodeAt(i) <= 122) {
+      newData += data.charAt(i);
+    } else if (data.charAt(i) == " ") {
+      newData += data.charAt(i);
+    }
+  }
+  return newData;
 };
 getMedium = async () => {
-  let res = await axios.get(baseUrl + "?minLength=200" + "&maxLength=250");
+  let res = await axios.get(baseUrl + "?minLength=200" + "&maxLength=500");
   return res.data[0].content;
 };
 getHard = async () => {

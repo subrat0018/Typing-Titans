@@ -14,6 +14,7 @@ const GameSchema = new mongoose.Schema({
   isOpen: { type: Boolean, default: true },
   players: [PlayerSchema],
   startTime: Number,
+  type: String,
 });
 const LobbySchema = new mongoose.Schema({
   lobbyId: String,

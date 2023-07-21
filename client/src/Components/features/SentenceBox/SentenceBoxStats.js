@@ -35,9 +35,6 @@ const SentenceBoxStats = ({ status, wpm, countDown, stats, rawKeyStrokes }) => {
             </h4>
           </Tooltip>
         )}
-        {status === "finished" && (
-          <h4>Raw KPM: {Math.round((rawKeyStrokes / countDown) * 60.0)}</h4>
-        )}
       </Box>
     </>
   );

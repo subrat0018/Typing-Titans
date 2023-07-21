@@ -37,11 +37,6 @@ const Stats = ({
             </h4>
           </Tooltip>
         )}
-        {status === "finished" && (
-          <h4>
-            Raw KPM: {Math.round((rawKeyStrokes / countDownConstant) * 60.0)}
-          </h4>
-        )}
       </Box>
     </>
   );

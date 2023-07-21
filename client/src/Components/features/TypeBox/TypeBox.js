@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import useSound from "use-sound";
 import { wordsGenerator } from "../../../scripts/wordsGenerator";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import UndoIcon from "@mui/icons-material/Undo";
 import IconButton from "../../utils/IconButton";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
@@ -30,6 +29,9 @@ import {
 import { SOUND_MAP } from "../sound/sound";
 
 const TypeBox = ({
+  quote,
+  mode,
+  players,
   textInputRef,
   isFocusedMode,
   soundMode,
@@ -87,10 +89,19 @@ const TypeBox = ({
   const handleTabKeyOpen = () => {
     setOpenRestart(true);
   };
-
+  const wordsGeneratorTitan = (quote) => {
+    if (!quote)
+      return wordsGenerator(DEFAULT_WORDS_COUNT, difficulty, ENGLISH_MODE);
+    const arr = quote.split(" ");
+    let dict = [];
+    for (let i = 0; i < arr.length; i++) {
+      dict.push({ key: arr[i], val: arr[i] });
+    }
+    return dict;
+  };
   // set up words state
   const [wordsDict, setWordsDict] = useState(() => {
-    return wordsGenerator(DEFAULT_WORDS_COUNT, difficulty, ENGLISH_MODE);
+    return wordsGeneratorTitan(quote);
   });
 
   const words = useMemo(() => {
@@ -267,7 +278,6 @@ const TypeBox = ({
       setIntervalId(intervalId);
     }
   };
-
   const UpdateInput = (e) => {
     if (status === "finished") {
       return;
@@ -575,60 +585,62 @@ const TypeBox = ({
         ></Stats>
         <div className="restart-button" key="restart-button">
           <Grid container justifyContent="center" alignItems="center">
-            <Box display="flex" flexDirection="row">
-              <IconButton
-                aria-label="restart"
-                color="secondary"
-                size="medium"
-                onClick={() => {
-                  reset(countDownConstant, difficulty, language, false);
-                }}
-              >
-                <Tooltip title={RESTART_BUTTON_TOOLTIP_TITLE}>
-                  <RestartAltIcon />
-                </Tooltip>
-              </IconButton>
-              {menuEnabled && (
-                <>
-                  <IconButton
-                    onClick={() => {
-                      reset(COUNT_DOWN_90, difficulty, language, false);
-                    }}
-                  >
-                    <span className={getTimerButtonClassName(COUNT_DOWN_90)}>
-                      {COUNT_DOWN_90}
-                    </span>
-                  </IconButton>
-                  <IconButton
-                    onClick={() => {
-                      reset(COUNT_DOWN_60, difficulty, language, false);
-                    }}
-                  >
-                    <span className={getTimerButtonClassName(COUNT_DOWN_60)}>
-                      {COUNT_DOWN_60}
-                    </span>
-                  </IconButton>
-                  <IconButton
-                    onClick={() => {
-                      reset(COUNT_DOWN_30, difficulty, language, false);
-                    }}
-                  >
-                    <span className={getTimerButtonClassName(COUNT_DOWN_30)}>
-                      {COUNT_DOWN_30}
-                    </span>
-                  </IconButton>
-                  <IconButton
-                    onClick={() => {
-                      reset(COUNT_DOWN_15, difficulty, language, false);
-                    }}
-                  >
-                    <span className={getTimerButtonClassName(COUNT_DOWN_15)}>
-                      {COUNT_DOWN_15}
-                    </span>
-                  </IconButton>
-                </>
-              )}
-            </Box>
+            {mode === "Single" && (
+              <Box display="flex" flexDirection="row">
+                <IconButton
+                  aria-label="restart"
+                  color="secondary"
+                  size="medium"
+                  onClick={() => {
+                    reset(countDownConstant, difficulty, language, false);
+                  }}
+                >
+                  <Tooltip title={RESTART_BUTTON_TOOLTIP_TITLE}>
+                    <RestartAltIcon />
+                  </Tooltip>
+                </IconButton>
+                {menuEnabled && (
+                  <>
+                    <IconButton
+                      onClick={() => {
+                        reset(COUNT_DOWN_90, difficulty, language, false);
+                      }}
+                    >
+                      <span className={getTimerButtonClassName(COUNT_DOWN_90)}>
+                        {COUNT_DOWN_90}
+                      </span>
+                    </IconButton>
+                    <IconButton
+                      onClick={() => {
+                        reset(COUNT_DOWN_60, difficulty, language, false);
+                      }}
+                    >
+                      <span className={getTimerButtonClassName(COUNT_DOWN_60)}>
+                        {COUNT_DOWN_60}
+                      </span>
+                    </IconButton>
+                    <IconButton
+                      onClick={() => {
+                        reset(COUNT_DOWN_30, difficulty, language, false);
+                      }}
+                    >
+                      <span className={getTimerButtonClassName(COUNT_DOWN_30)}>
+                        {COUNT_DOWN_30}
+                      </span>
+                    </IconButton>
+                    <IconButton
+                      onClick={() => {
+                        reset(COUNT_DOWN_15, difficulty, language, false);
+                      }}
+                    >
+                      <span className={getTimerButtonClassName(COUNT_DOWN_15)}>
+                        {COUNT_DOWN_15}
+                      </span>
+                    </IconButton>
+                  </>
+                )}
+              </Box>
+            )}
             {menuEnabled && (
               <Box display="flex" flexDirection="row">
                 <IconButton

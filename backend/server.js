@@ -48,6 +48,7 @@ io.on("connection", (socket) => {
       };
       game.startTime = Date.now();
       game.players.push(player);
+      game.type = "Single";
       game = await game.save();
       lobbyId = game._id.toString();
       socket.join(lobbyId);
@@ -76,6 +77,7 @@ io.on("connection", (socket) => {
       game.startTime = Date.now();
       game.expireTime = game.startTime + 15000;
       game.players.push(player);
+      game.type = "Multi";
       game = await game.save();
       let lobbyId = game._id.toString();
       let expireTime = game.startTime + 15000;
