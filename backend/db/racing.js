@@ -7,9 +7,7 @@ const PlayerSchema = new mongoose.Schema({
   },
   socketId: { type: String },
   wpm: { type: Number, default: 0 },
-  countDownConstant: Number,
-  statsCharCount: Number,
-  rawKeyStrokes: Number,
+  statsCharCount: { type: [Number], default: [0, 0, 0, 0] },
   userName: { type: String },
 });
 const GameSchema = new mongoose.Schema({

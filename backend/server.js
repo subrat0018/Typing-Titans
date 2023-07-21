@@ -68,6 +68,7 @@ io.on("connection", (socket) => {
         lobby.game.players.push(player);
         lobby.playersCount += 1;
         socket.join(lobby.lobbyId);
+        await Lobby.updateOne({ lobbyId: lobby.lobbyId }, lobby);
         io.to(lobby.lobbyId).emit("gameUpdates", lobby.game);
         return;
       }
@@ -91,6 +92,7 @@ io.on("connection", (socket) => {
       newLobby.save();
       socket.join(lobbyId);
       io.to(lobbyId).emit("gameUpdates", game);
+      console.log(lobbyId);
     }
   });
 
@@ -110,11 +112,20 @@ io.on("connection", (socket) => {
   });
 
   // Event to handle typing progress updates from clients
-  socket.on("typingProgress", (data) => {
-    // Your logic to update the typing progress and broadcast it to all players in the lobby
-    const { lobbyId, progress } = data;
-    lobbies[lobbyId].progress[socket.id] = progress;
-    io.to(lobbyId).emit("updateProgress", lobbies[lobbyId].progress);
+  socket.on("typingProgress", async (playerData) => {
+    let lobby = await Lobby.findOne({ lobbyId: playerData.id });
+    if (!lobby) return;
+    for (let i = 0; i < lobby.game.players.length; i++) {
+      if (lobby.game.players[i].socketId === socket.id) {
+        lobby.game.players[i].wpm = playerData.wpm;
+        lobby.game.players[i].statsCharCount = playerData.statsCharCount;
+      }
+    }
+    lobby.game.players.sort((a, b) => {
+      return b.wpm - a.wpm;
+    });
+    await Lobby.updateOne({ lobbyId: playerData.id }, lobby);
+    io.to(playerData.id).emit("updatePlayers", lobby.game.players);
   });
 
   // Event to handle game end in a lobby

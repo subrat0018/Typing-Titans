@@ -3,7 +3,7 @@ const COUNT_DOWN_90 = 90;
 const COUNT_DOWN_60 = 60;
 const COUNT_DOWN_30 = 30;
 const COUNT_DOWN_15 = 15;
-const DEFAULT_COUNT_DOWN = COUNT_DOWN_60;
+const DEFAULT_COUNT_DOWN = COUNT_DOWN_30;
 
 const DEFAULT_DIFFICULTY = "normal";
 const HARD_DIFFICULTY = "hard";

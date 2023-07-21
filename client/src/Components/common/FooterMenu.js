@@ -66,13 +66,13 @@ const FooterMenu = ({
     <div className="footer">
       <Grid container justifyContent="space-between" alignItems="center">
         <Box display="flex" flexDirection="row">
-          <IconButton onClick={toggleFocusedMode}>
+          {/* <IconButton onClick={toggleFocusedMode}>
             <Tooltip title={FOCUS_MODE}>
               <span className={getModeButtonClassName(isFocusedMode)}>
                 <SelfImprovementIcon fontSize="medium"></SelfImprovementIcon>
               </span>
             </Tooltip>
-          </IconButton>
+          </IconButton> */}
           <IconButton onClick={toggleSoundMode}>
             <Tooltip title={SOUND_MODE_TOOLTIP}>
               <span className={getModeButtonClassName(soundMode)}>
@@ -115,13 +115,13 @@ const FooterMenu = ({
               </span>
             </Tooltip>
           </IconButton>
-          <IconButton onClick={toggleTrainerMode}>
+          {/* <IconButton onClick={toggleTrainerMode}>
             <Tooltip title={TRAINER_MODE}>
               <span className={getModeButtonClassName(isTrainerMode)}>
                 <KeyboardAltOutlinedIcon fontSize="medium"></KeyboardAltOutlinedIcon>
               </span>
             </Tooltip>
-          </IconButton>
+          </IconButton> */}
           {/* <IconButton onClick={toggleMusicMode}>
             <Tooltip title={MUSIC_MODE}>
               <span className={getModeButtonClassName(isMusicMode)}>

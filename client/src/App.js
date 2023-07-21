@@ -13,6 +13,7 @@ function App() {
     quote: "",
     type: "",
     username: "",
+    startTime: 0,
   });
   console.log(gameState);
   return (
@@ -31,6 +32,7 @@ function App() {
               players={gameState.players}
               type={gameState.type}
               username={gameState.username}
+              startTime={gameState.startTime}
             />
           }
         />

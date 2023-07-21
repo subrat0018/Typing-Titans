@@ -23,7 +23,7 @@ import {
   DEFAULT_SOUND_TYPE_KEY,
 } from "../Components/features/sound/sound";
 
-const PlayGround = ({ quote, id, players, type, username }) => {
+const PlayGround = ({ quote, id, players, type, username, startTime }) => {
   // localStorage persist theme setting
   const [theme, setTheme] = useState(() => {
     const stickyTheme = window.localStorage.getItem("theme");
@@ -178,10 +178,12 @@ const PlayGround = ({ quote, id, players, type, username }) => {
         <Logo isFocusedMode={isFocusedMode} isMusicMode={isMusicMode}></Logo>
         {isWordGameMode && (
           <TypeBox
+            id={id}
             quote={quote}
             mode={type}
             players={players}
             username={username}
+            startTime={startTime}
             textInputRef={textInputRef}
             isFocusedMode={isFocusedMode}
             soundMode={soundMode}
@@ -216,28 +218,30 @@ const PlayGround = ({ quote, id, players, type, username }) => {
         {isWordsCardMode && !isCoffeeMode && !isTrainerMode && (
           <WordsCard soundMode={soundMode} soundType={soundType}></WordsCard>
         )}
-        <FooterMenu
-          themesOptions={themesOptions}
-          theme={theme}
-          soundMode={soundMode}
-          toggleSoundMode={toggleSoundMode}
-          soundOptions={soundOptions}
-          soundType={soundType}
-          handleSoundTypeChange={handleSoundTypeChange}
-          handleThemeChange={handleThemeChange}
-          toggleFocusedMode={toggleFocusedMode}
-          toggleMusicMode={toggleMusicMode}
-          toggleCoffeeMode={toggleCoffeeMode}
-          isCoffeeMode={isCoffeeMode}
-          isMusicMode={isMusicMode}
-          isFocusedMode={isFocusedMode}
-          gameMode={gameMode}
-          handleGameModeChange={handleGameModeChange}
-          isTrainerMode={isTrainerMode}
-          toggleTrainerMode={toggleTrainerMode}
-          isWordsCardMode={isWordsCardMode}
-          toggleWordsCardMode={toggleWordsCardMode}
-        ></FooterMenu>
+        {type !== "Multi" && (
+          <FooterMenu
+            themesOptions={themesOptions}
+            theme={theme}
+            soundMode={soundMode}
+            toggleSoundMode={toggleSoundMode}
+            soundOptions={soundOptions}
+            soundType={soundType}
+            handleSoundTypeChange={handleSoundTypeChange}
+            handleThemeChange={handleThemeChange}
+            toggleFocusedMode={toggleFocusedMode}
+            toggleMusicMode={toggleMusicMode}
+            toggleCoffeeMode={toggleCoffeeMode}
+            isCoffeeMode={isCoffeeMode}
+            isMusicMode={isMusicMode}
+            isFocusedMode={isFocusedMode}
+            gameMode={gameMode}
+            handleGameModeChange={handleGameModeChange}
+            isTrainerMode={isTrainerMode}
+            toggleTrainerMode={toggleTrainerMode}
+            isWordsCardMode={isWordsCardMode}
+            toggleWordsCardMode={toggleWordsCardMode}
+          ></FooterMenu>
+        )}
         <MusicPlayerSnackbar
           isMusicMode={isMusicMode}
           isFocusedMode={isFocusedMode}

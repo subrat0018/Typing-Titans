@@ -26,13 +26,17 @@ import {
   PACING_CARET_TOOLTIP,
   PACING_PULSE_TOOLTIP,
 } from "../../../constants/Constants";
+import Popup from "./PopOut";
 import { SOUND_MAP } from "../sound/sound";
+import socket from "../../../socketConfig";
 
 const TypeBox = ({
+  id,
   quote,
   mode,
   players,
   username,
+  startTime,
   textInputRef,
   isFocusedMode,
   soundMode,
@@ -40,12 +44,10 @@ const TypeBox = ({
   handleInputFocus,
 }) => {
   const [play] = useSound(SOUND_MAP[soundType], { volume: 0.5 });
-
+  const [playing, setPlaying] = useState(players);
   // local persist timer
-  const [countDownConstant, setCountDownConstant] = useLocalPersistState(
-    DEFAULT_COUNT_DOWN,
-    "timer-constant"
-  );
+  const [countDownConstant, setCountDownConstant] =
+    useState(DEFAULT_COUNT_DOWN);
 
   // local persist pacing style
   const [pacingStyle, setPacingStyle] = useLocalPersistState(
@@ -64,7 +66,8 @@ const TypeBox = ({
     ENGLISH_MODE,
     "language"
   );
-
+  const [countDown, setCountDown] = useState(countDownConstant);
+  const [intervalId, setIntervalId] = useState(null);
   // Caps Lock
   const [capsLocked, setCapsLocked] = useState(false);
 
@@ -121,10 +124,6 @@ const TypeBox = ({
     [words]
   );
 
-  // set up timer state
-  const [countDown, setCountDown] = useState(countDownConstant);
-  const [intervalId, setIntervalId] = useState(null);
-
   // set up game loop status state
   const [status, setStatus] = useState("waiting");
 
@@ -148,13 +147,12 @@ const TypeBox = ({
   const [rawKeyStrokes, setRawKeyStrokes] = useState(0);
   const [wpmKeyStrokes, setWpmKeyStrokes] = useState(0);
   const [wpm, setWpm] = useState(0);
-  const [statsCharCount, setStatsCharCount] = useState([]);
+  const [statsCharCount, setStatsCharCount] = useState([0, 0, 0, 0]);
 
   // set up char examine hisotry
   const [history, setHistory] = useState({});
   const keyString = currWordIndex + "." + currCharIndex;
   const [currChar, setCurrChar] = useState("");
-
   useEffect(() => {
     if (currWordIndex === DEFAULT_WORDS_COUNT - 1) {
       const generatedEng = wordsGenerator(
@@ -174,6 +172,43 @@ const TypeBox = ({
       return;
     }
   }, [currWordIndex, wordSpanRefs, difficulty, language]);
+  useEffect(() => {
+    if (status === "finished") {
+      if (wpmKeyStrokes !== 0) {
+        const currWpm = (wpmKeyStrokes / 5 / countDownConstant) * 60.0;
+        setWpm(currWpm);
+      }
+    }
+  }, [status]);
+  const [startRace, setStartRace] = useState(false);
+  useEffect(() => {
+    socket.emit("typingProgress", {
+      wpm: wpm,
+      statsCharCount: statsCharCount,
+      id: id,
+    });
+    socket.on("updatePlayers", (newPlayers) => {
+      setPlaying([...newPlayers]);
+    });
+  }, [wpm]);
+  useEffect(() => {
+    const functionToRunAfterInterval = () => {
+      setStartRace(true);
+      start();
+    };
+    // Set the time interval (in milliseconds)
+    if (mode === "Multi" && status !== "started" && status !== "finished") {
+      // Run the functionToRunAfterInterval after the interval
+      const timeoutId = setTimeout(() => {
+        functionToRunAfterInterval();
+      }, startTime + 20000 - Date.now());
+
+      // Clean up the timeouts and intervals when the component is unmounted
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+  }, []);
 
   const reset = (newCountDown, difficulty, language, isRedo) => {
     setStatus("waiting");
@@ -283,6 +318,7 @@ const TypeBox = ({
     if (status === "finished") {
       return;
     }
+    if (mode === "Multi" && !startRace) return;
     setCurrInput(e.target.value);
     inputWordsHistory[currWordIndex] = e.target.value.trim();
     setInputWordsHistory(inputWordsHistory);
@@ -293,15 +329,15 @@ const TypeBox = ({
   };
 
   const handleKeyDown = (e) => {
+    if (mode === "Multi" && !startRace) return;
     if (status !== "finished" && soundMode) {
       play();
     }
     const key = e.key;
     const keyCode = e.keyCode;
     setCapsLocked(e.getModifierState("CapsLock"));
-
-    // keydown count for KPM calculations to all types of operations
     if (status === "started") {
+      // keydown count for KPM calculations to all types of operations
       setRawKeyStrokes(rawKeyStrokes + 1);
       if (keyCode >= 65 && keyCode <= 90) {
         setWpmKeyStrokes(wpmKeyStrokes + 1);
@@ -341,10 +377,14 @@ const TypeBox = ({
     }
 
     // start the game by typing any thing
-    if (status !== "started" && status !== "finished") {
+    if (status !== "started" && status !== "finished" && mode !== "Multi") {
       start();
     }
-
+    socket.emit("typingProgress", {
+      wpm: wpm,
+      statsCharCount: statsCharCount,
+      id: id,
+    });
     // space bar
     if (keyCode === 32) {
       const prevCorrectness = checkPrev();
@@ -555,186 +595,201 @@ const TypeBox = ({
     return "inactive-button";
   };
   return (
-    <div onClick={handleInputFocus}>
-      <CapsLockSnackbar open={capsLocked}></CapsLockSnackbar>
-      <div className="type-box h-1/2">
-        <div className="words">
-          {words.map((word, i) => (
-            <span key={i} ref={wordSpanRefs[i]} className={getWordClassName(i)}>
-              {word.split("").map((char, idx) => (
-                <span
-                  key={"word" + idx}
-                  className={getCharClassName(i, idx, char, word)}
-                >
-                  {char}
-                </span>
-              ))}
-              {getExtraCharsDisplay(word, i)}
-            </span>
-          ))}
+    <div>
+      {startRace && <Popup />}
+      <div onClick={handleInputFocus}>
+        <CapsLockSnackbar open={capsLocked}></CapsLockSnackbar>
+        <div className="type-box h-1/2">
+          <div className="words">
+            {words.map((word, i) => (
+              <span
+                key={i}
+                ref={wordSpanRefs[i]}
+                className={getWordClassName(i)}
+              >
+                {word.split("").map((char, idx) => (
+                  <span
+                    key={"word" + idx}
+                    className={getCharClassName(i, idx, char, word)}
+                  >
+                    {char}
+                  </span>
+                ))}
+                {getExtraCharsDisplay(word, i)}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="stats">
-        {mode === "Multi" && (
-          <div>
-            <h3>{countDown} s </h3>
-            {players.map((item) => {
-              return (
-                <Stats
-                  status={status}
-                  username={item.userName}
-                  wpm={item.wpm}
-                  countDownConstant={item.countDownConstant}
-                  statsCharCount={item.statsCharCount}
-                  rawKeyStrokes={item.rawKeyStrokes}
-                  key={item}
-                ></Stats>
-              );
-            })}
+        <div className="stats">
+          {mode === "Multi" && (
+            <div>
+              <h3>{countDown} s </h3>
+              {playing.map((item) => {
+                return (
+                  <Stats
+                    status={status}
+                    username={item.userName}
+                    wpm={item.wpm}
+                    countDownConstant={item.countDownConstant}
+                    statsCharCount={item.statsCharCount}
+                    rawKeyStrokes={item.rawKeyStrokes}
+                    key={item}
+                  ></Stats>
+                );
+              })}
+            </div>
+          )}
+          {mode !== "Multi" && (
+            <div>
+              <h3>{countDown} s </h3>
+              <Stats
+                status={status}
+                username={username}
+                wpm={wpm}
+                countDownConstant={countDownConstant}
+                statsCharCount={statsCharCount}
+                rawKeyStrokes={rawKeyStrokes}
+              ></Stats>
+            </div>
+          )}
+          <div className="restart-button" key="restart-button">
+            <Grid container justifyContent="center" alignItems="center">
+              {mode !== "Multi" && (
+                <Box display="flex" flexDirection="row">
+                  <IconButton
+                    aria-label="restart"
+                    color="secondary"
+                    size="medium"
+                    onClick={() => {
+                      reset(countDownConstant, difficulty, language, false);
+                    }}
+                  >
+                    <Tooltip title={RESTART_BUTTON_TOOLTIP_TITLE}>
+                      <RestartAltIcon />
+                    </Tooltip>
+                  </IconButton>
+                  {menuEnabled && (
+                    <>
+                      <IconButton
+                        onClick={() => {
+                          reset(COUNT_DOWN_90, difficulty, language, false);
+                        }}
+                      >
+                        <span
+                          className={getTimerButtonClassName(COUNT_DOWN_90)}
+                        >
+                          {COUNT_DOWN_90}
+                        </span>
+                      </IconButton>
+                      <IconButton
+                        onClick={() => {
+                          reset(COUNT_DOWN_60, difficulty, language, false);
+                        }}
+                      >
+                        <span
+                          className={getTimerButtonClassName(COUNT_DOWN_60)}
+                        >
+                          {COUNT_DOWN_60}
+                        </span>
+                      </IconButton>
+                      <IconButton
+                        onClick={() => {
+                          reset(COUNT_DOWN_30, difficulty, language, false);
+                        }}
+                      >
+                        <span
+                          className={getTimerButtonClassName(COUNT_DOWN_30)}
+                        >
+                          {COUNT_DOWN_30}
+                        </span>
+                      </IconButton>
+                      <IconButton
+                        onClick={() => {
+                          reset(COUNT_DOWN_15, difficulty, language, false);
+                        }}
+                      >
+                        <span
+                          className={getTimerButtonClassName(COUNT_DOWN_15)}
+                        >
+                          {COUNT_DOWN_15}
+                        </span>
+                      </IconButton>
+                    </>
+                  )}
+                </Box>
+              )}
+              {menuEnabled && (
+                <Box display="flex" flexDirection="row">
+                  <IconButton
+                    onClick={() => {
+                      setPacingStyle(PACING_PULSE);
+                    }}
+                  >
+                    <Tooltip title={PACING_PULSE_TOOLTIP}>
+                      <span
+                        className={getPacingStyleButtonClassName(PACING_PULSE)}
+                      >
+                        {PACING_PULSE}
+                      </span>
+                    </Tooltip>
+                  </IconButton>
+                  <IconButton
+                    onClick={() => {
+                      setPacingStyle(PACING_CARET);
+                    }}
+                  >
+                    <Tooltip title={PACING_CARET_TOOLTIP}>
+                      <span
+                        className={getPacingStyleButtonClassName(PACING_CARET)}
+                      >
+                        {PACING_CARET}
+                      </span>
+                    </Tooltip>
+                  </IconButton>
+                </Box>
+              )}
+            </Grid>
           </div>
-        )}
-        {mode === "Single" && (
-          <div>
-            <h3>{countDown} s </h3>
-            <Stats
-              status={status}
-              username={username}
-              wpm={wpm}
-              countDownConstant={countDownConstant}
-              statsCharCount={statsCharCount}
-              rawKeyStrokes={rawKeyStrokes}
-            ></Stats>
-          </div>
-        )}
-        <div className="restart-button" key="restart-button">
-          <Grid container justifyContent="center" alignItems="center">
-            {mode === "Single" && (
-              <Box display="flex" flexDirection="row">
-                <IconButton
-                  aria-label="restart"
-                  color="secondary"
-                  size="medium"
-                  onClick={() => {
-                    reset(countDownConstant, difficulty, language, false);
-                  }}
-                >
-                  <Tooltip title={RESTART_BUTTON_TOOLTIP_TITLE}>
-                    <RestartAltIcon />
-                  </Tooltip>
-                </IconButton>
-                {menuEnabled && (
-                  <>
-                    <IconButton
-                      onClick={() => {
-                        reset(COUNT_DOWN_90, difficulty, language, false);
-                      }}
-                    >
-                      <span className={getTimerButtonClassName(COUNT_DOWN_90)}>
-                        {COUNT_DOWN_90}
-                      </span>
-                    </IconButton>
-                    <IconButton
-                      onClick={() => {
-                        reset(COUNT_DOWN_60, difficulty, language, false);
-                      }}
-                    >
-                      <span className={getTimerButtonClassName(COUNT_DOWN_60)}>
-                        {COUNT_DOWN_60}
-                      </span>
-                    </IconButton>
-                    <IconButton
-                      onClick={() => {
-                        reset(COUNT_DOWN_30, difficulty, language, false);
-                      }}
-                    >
-                      <span className={getTimerButtonClassName(COUNT_DOWN_30)}>
-                        {COUNT_DOWN_30}
-                      </span>
-                    </IconButton>
-                    <IconButton
-                      onClick={() => {
-                        reset(COUNT_DOWN_15, difficulty, language, false);
-                      }}
-                    >
-                      <span className={getTimerButtonClassName(COUNT_DOWN_15)}>
-                        {COUNT_DOWN_15}
-                      </span>
-                    </IconButton>
-                  </>
-                )}
-              </Box>
-            )}
-            {menuEnabled && (
-              <Box display="flex" flexDirection="row">
-                <IconButton
-                  onClick={() => {
-                    setPacingStyle(PACING_PULSE);
-                  }}
-                >
-                  <Tooltip title={PACING_PULSE_TOOLTIP}>
-                    <span
-                      className={getPacingStyleButtonClassName(PACING_PULSE)}
-                    >
-                      {PACING_PULSE}
-                    </span>
-                  </Tooltip>
-                </IconButton>
-                <IconButton
-                  onClick={() => {
-                    setPacingStyle(PACING_CARET);
-                  }}
-                >
-                  <Tooltip title={PACING_CARET_TOOLTIP}>
-                    <span
-                      className={getPacingStyleButtonClassName(PACING_CARET)}
-                    >
-                      {PACING_CARET}
-                    </span>
-                  </Tooltip>
-                </IconButton>
-              </Box>
-            )}
-          </Grid>
         </div>
+        <input
+          key="hidden-input"
+          ref={textInputRef}
+          type="text"
+          className="hidden-input"
+          onKeyDown={(e) => handleKeyDown(e)}
+          onKeyUp={(e) => handleKeyUp(e)}
+          value={currInput}
+          onChange={(e) => UpdateInput(e)}
+        />
+        <Dialog
+          PaperProps={{
+            style: {
+              backgroundColor: "transparent",
+              boxShadow: "none",
+            },
+          }}
+          open={openRestart}
+          onKeyDown={EnterkeyPressReset}
+        >
+          <DialogTitle>
+            <div>
+              <span className="key-note"> press </span>
+              <span className="key-type">Space</span>{" "}
+              <span className="key-note">to redo</span>
+            </div>
+            <div>
+              <span className="key-note"> press </span>
+              <span className="key-type">Tab</span>{" "}
+              <span className="key-note">/</span>{" "}
+              <span className="key-type">Enter</span>{" "}
+              <span className="key-note">to restart</span>
+            </div>
+            <span className="key-note"> press </span>
+            <span className="key-type">any key </span>{" "}
+            <span className="key-note">to exit</span>
+          </DialogTitle>
+        </Dialog>
       </div>
-      <input
-        key="hidden-input"
-        ref={textInputRef}
-        type="text"
-        className="hidden-input"
-        onKeyDown={(e) => handleKeyDown(e)}
-        onKeyUp={(e) => handleKeyUp(e)}
-        value={currInput}
-        onChange={(e) => UpdateInput(e)}
-      />
-      <Dialog
-        PaperProps={{
-          style: {
-            backgroundColor: "transparent",
-            boxShadow: "none",
-          },
-        }}
-        open={openRestart}
-        onKeyDown={EnterkeyPressReset}
-      >
-        <DialogTitle>
-          <div>
-            <span className="key-note"> press </span>
-            <span className="key-type">Space</span>{" "}
-            <span className="key-note">to redo</span>
-          </div>
-          <div>
-            <span className="key-note"> press </span>
-            <span className="key-type">Tab</span>{" "}
-            <span className="key-note">/</span>{" "}
-            <span className="key-type">Enter</span>{" "}
-            <span className="key-note">to restart</span>
-          </div>
-          <span className="key-note"> press </span>
-          <span className="key-type">any key </span>{" "}
-          <span className="key-note">to exit</span>
-        </DialogTitle>
-      </Dialog>
     </div>
   );
 };

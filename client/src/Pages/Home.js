@@ -24,12 +24,15 @@ const Home = ({ gameState, setGameState }) => {
         quote: game.words,
         type: game.type,
         username: userName,
+        startTime: game.startTime,
       });
     });
     return () => {};
   }, [difficulty, mode]);
   useEffect(() => {
     if (gameState.id) {
+      setDifficulty("");
+      setMode("");
       navigate(`/playground/${gameState.id}`);
     }
   }, [gameState.id]);

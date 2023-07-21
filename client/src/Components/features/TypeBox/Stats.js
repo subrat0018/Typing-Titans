@@ -3,14 +3,7 @@ import { Box } from "@mui/system";
 import { Tooltip } from "@mui/material";
 import { CHAR_TOOLTIP_TITLE } from "../../../constants/Constants";
 
-const Stats = ({
-  username,
-  status,
-  wpm,
-  countDownConstant,
-  statsCharCount,
-  rawKeyStrokes,
-}) => {
+const Stats = ({ username, status, wpm, statsCharCount }) => {
   return (
     <>
       <div>Username: {username}</div>
@@ -32,8 +25,7 @@ const Stats = ({
               <span className="correct-char-stats">{statsCharCount[1]}</span>/
               <span className="incorrect-char-stats">{statsCharCount[2]}</span>/
               <span className="missing-char-stats">{statsCharCount[3]}</span>/
-              <span className="correct-char-stats">{statsCharCount[4]}</span>/
-              <span className="incorrect-char-stats">{statsCharCount[5]}</span>
+              <span className="extra-char-stats">{statsCharCount[4]}</span>
             </h4>
           </Tooltip>
         )}

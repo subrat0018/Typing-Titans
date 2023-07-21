@@ -25,7 +25,7 @@ function getRandomPunctuation() {
   return punctuationMarks[randomIndex];
 }
 getEasy = async () => {
-  let res = await axios.get(baseUrl + "?minLength=200" + "&maxLength=500");
+  let res = await axios.get(baseUrl + "?minLength=300" + "&maxLength=1000");
   let data = res.data[0].content;
   newData = "";
   for (let i = 0; i < data.length; i++) {
@@ -40,7 +40,7 @@ getEasy = async () => {
   return newData;
 };
 getMedium = async () => {
-  let res = await axios.get(baseUrl + "?minLength=200" + "&maxLength=500");
+  let res = await axios.get(baseUrl + "?minLength=300" + "&maxLength=1000");
   return res.data[0].content;
 };
 getHard = async () => {
