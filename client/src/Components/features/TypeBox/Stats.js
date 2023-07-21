@@ -4,16 +4,16 @@ import { Tooltip } from "@mui/material";
 import { CHAR_TOOLTIP_TITLE } from "../../../constants/Constants";
 
 const Stats = ({
+  username,
   status,
   wpm,
-  countDown,
   countDownConstant,
   statsCharCount,
   rawKeyStrokes,
 }) => {
   return (
     <>
-      <h3>{countDown} s </h3>
+      <div>Username: {username}</div>
       <Box display="flex" flexDirection="row">
         <h3>WPM: {Math.round(wpm)}</h3>
         {status === "finished" && (

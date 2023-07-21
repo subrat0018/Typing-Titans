@@ -23,6 +23,7 @@ const Home = ({ gameState, setGameState }) => {
         players: game.players,
         quote: game.words,
         type: game.type,
+        username: userName,
       });
     });
     return () => {};

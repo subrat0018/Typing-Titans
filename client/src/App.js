@@ -12,6 +12,7 @@ function App() {
     players: [],
     quote: "",
     type: "",
+    username: "",
   });
   console.log(gameState);
   return (
@@ -29,6 +30,7 @@ function App() {
               id={gameState.id}
               players={gameState.players}
               type={gameState.type}
+              username={gameState.username}
             />
           }
         />

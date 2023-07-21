@@ -32,6 +32,7 @@ const TypeBox = ({
   quote,
   mode,
   players,
+  username,
   textInputRef,
   isFocusedMode,
   soundMode,
@@ -553,7 +554,6 @@ const TypeBox = ({
     }
     return "inactive-button";
   };
-
   return (
     <div onClick={handleInputFocus}>
       <CapsLockSnackbar open={capsLocked}></CapsLockSnackbar>
@@ -575,14 +575,37 @@ const TypeBox = ({
         </div>
       </div>
       <div className="stats">
-        <Stats
-          status={status}
-          wpm={wpm}
-          countDown={countDown}
-          countDownConstant={countDownConstant}
-          statsCharCount={statsCharCount}
-          rawKeyStrokes={rawKeyStrokes}
-        ></Stats>
+        {mode === "Multi" && (
+          <div>
+            <h3>{countDown} s </h3>
+            {players.map((item) => {
+              return (
+                <Stats
+                  status={status}
+                  username={item.userName}
+                  wpm={item.wpm}
+                  countDownConstant={item.countDownConstant}
+                  statsCharCount={item.statsCharCount}
+                  rawKeyStrokes={item.rawKeyStrokes}
+                  key={item}
+                ></Stats>
+              );
+            })}
+          </div>
+        )}
+        {mode === "Single" && (
+          <div>
+            <h3>{countDown} s </h3>
+            <Stats
+              status={status}
+              username={username}
+              wpm={wpm}
+              countDownConstant={countDownConstant}
+              statsCharCount={statsCharCount}
+              rawKeyStrokes={rawKeyStrokes}
+            ></Stats>
+          </div>
+        )}
         <div className="restart-button" key="restart-button">
           <Grid container justifyContent="center" alignItems="center">
             {mode === "Single" && (
