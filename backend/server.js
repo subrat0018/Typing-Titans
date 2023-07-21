@@ -60,10 +60,12 @@ io.on("connection", (socket) => {
       };
       let lobby = await Lobby.findOne({
         expireTime: { $gt: Date.now() },
+        playersCount: { $lt: 8 },
         difficulty: difficulty,
       });
       if (lobby) {
         lobby.game.players.push(player);
+        lobby.playersCount += 1;
         socket.join(lobby.lobbyId);
         io.to(lobby.lobbyId).emit("gameUpdates", lobby.game);
         return;
@@ -82,6 +84,7 @@ io.on("connection", (socket) => {
         expireTime: expireTime,
         game: game,
         difficulty: difficulty,
+        playersCount: 1,
       });
       newLobby.save();
       socket.join(lobbyId);

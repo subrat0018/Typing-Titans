@@ -20,6 +20,7 @@ const LobbySchema = new mongoose.Schema({
   expireTime: Number,
   game: GameSchema,
   difficulty: String,
+  playersCount: Number,
 });
 const Game = mongoose.model("Game", GameSchema);
 const Lobby = mongoose.model("Loby", LobbySchema);
