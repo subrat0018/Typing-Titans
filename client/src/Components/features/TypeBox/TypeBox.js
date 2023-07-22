@@ -183,6 +183,7 @@ const TypeBox = ({
   const [startRace, setStartRace] = useState(false);
   useEffect(() => {
     socket.emit("typingProgress", {
+      wpmKeyStrokes: wpmKeyStrokes,
       wpm: wpm,
       statsCharCount: statsCharCount,
       id: id,
@@ -381,6 +382,7 @@ const TypeBox = ({
       start();
     }
     socket.emit("typingProgress", {
+      wpmKeyStrokes: wpmKeyStrokes,
       wpm: wpm,
       statsCharCount: statsCharCount,
       id: id,

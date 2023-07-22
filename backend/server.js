@@ -119,6 +119,7 @@ io.on("connection", (socket) => {
       if (lobby.game.players[i].socketId === socket.id) {
         lobby.game.players[i].wpm = playerData.wpm;
         lobby.game.players[i].statsCharCount = playerData.statsCharCount;
+        lobby.game.players[i].wpmKeyStrokes = playerData.wpmKeyStrokes;
       }
     }
     lobby.game.players.sort((a, b) => {
@@ -137,15 +138,27 @@ io.on("connection", (socket) => {
   });
 
   // Event to handle disconnections
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log("Client disconnected:", socket.id);
-    // Your logic to handle player disconnections and remove them from the lobby if necessary
-    const lobbyId = findLobbyId(socket.id);
-    if (lobbyId) {
-      delete lobbies[lobbyId].progress[socket.id];
-      io.to(lobbyId).emit("updateProgress", lobbies[lobbyId].progress);
-    }
-    clients.splice(clients.indexOf(socket.id), 1);
+    let lobbies = await Lobby.find();
+    if (!lobbies) return;
+    lobbies.forEach(async (lobby) => {
+      for (let i = 0; i < lobby.game.players.length; i++) {
+        if (lobby.game.players[i].socketId === socket.id) {
+          lobby.game.players[i].wpm =
+            (lobby.game.players[i].wpmKeyStrokes / 5 / 30) * 60.0;
+          lobby.game.players[i].statsCharCount =
+            lobby.game.players[i].statsCharCount;
+          lobby.game.players.sort((a, b) => {
+            return b.wpm - a.wpm;
+          });
+          await Lobby.updateOne({ lobbyId: lobby.lobbyId }, lobby);
+          console.log(lobby);
+          io.to(lobby.lobbyId).emit("updatePlayers", lobby.game.players);
+          return;
+        }
+      }
+    });
   });
 });
 
