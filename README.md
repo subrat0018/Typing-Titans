@@ -1,4 +1,4 @@
-# Typing-Titan
+# Typing-Titans
 ### Running the project
 
 The project uses NPM. It is strictly advised to stick with NPM so as to avoid dependency conflicts down the line. Please ensure you have Nodejs installed
