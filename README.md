@@ -20,7 +20,7 @@ npm run start
 ### Starting the Server
 
 ```
-## Checkout into the Frontend directory
+## Checkout into the Backend directory
 cd backend
 
 ## Install Dependencies
