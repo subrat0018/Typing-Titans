@@ -92,7 +92,6 @@ io.on("connection", (socket) => {
       newLobby.save();
       socket.join(lobbyId);
       io.to(lobbyId).emit("gameUpdates", game);
-      console.log(lobbyId);
     }
   });
 
@@ -153,7 +152,6 @@ io.on("connection", (socket) => {
             return b.wpm - a.wpm;
           });
           await Lobby.updateOne({ lobbyId: lobby.lobbyId }, lobby);
-          console.log(lobby);
           io.to(lobby.lobbyId).emit("updatePlayers", lobby.game.players);
           return;
         }
