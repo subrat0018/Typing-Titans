@@ -1,8 +1,9 @@
 package dto
 
 type User struct {
-	userID string
-	stats  *Stats
+	userID           string
+	stats            *Stats
+	currentWordIndex int64
 }
 
 func (u *User) UserID() string {
