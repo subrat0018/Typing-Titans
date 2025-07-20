@@ -14,7 +14,8 @@ var upgrade = websocket.Upgrader{
 func WsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrade.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Printf("Error while upgrading the http connection to web socket...")
+		fmt.Printf("Error while upgrading, err: %v", err)
+		return
 	}
 
 	defer conn.Close()
