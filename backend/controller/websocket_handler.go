@@ -1,9 +1,13 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"typing-titans/service"
+	"typing-titans/service/request"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -13,9 +17,15 @@ var upgrade = websocket.Upgrader{
 
 func WsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrade.Upgrade(w, r, nil)
+	fmt.Println("Creating a new socket...")
 	if err != nil {
 		fmt.Printf("Error while upgrading, err: %v", err)
 		return
+	}
+
+	clientID, err := uuid.NewUUID()
+	if err != nil {
+		fmt.Printf("Error while generating UUID, err: %v", err)
 	}
 
 	defer conn.Close()
@@ -24,8 +34,18 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("Error while reading message")
 		}
-		fmt.Printf("Recieved: %v\n", string(message))
 
-		err = conn.WriteMessage(websocket.TextMessage, []byte("Ok"))
+		event := &request.Event{}
+		err = json.Unmarshal(message, event)
+		if err != nil {
+			fmt.Printf("Error while unmarshalling err: %v", err)
+			return
+		}
+
+		resp := service.HandleGame(clientID.String(), event)
+
+		fmt.Printf("Recieved: %+v\n", event)
+
+		err = conn.WriteMessage(websocket.TextMessage, []byte(resp.Message))
 	}
 }

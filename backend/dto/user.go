@@ -20,8 +20,21 @@ func (u *User) Stats() *Stats {
 	return u.stats
 }
 
-func NewUser(userID string) *User {
-	return &User{
-		userID: userID,
+func (u *User) CurrentWordIndex() int64 {
+	if u == nil {
+		return 0
 	}
+	return u.currentWordIndex
+}
+
+func NewUser(userID string, stats *Stats, currentWordIndex int64) *User {
+	return &User{
+		userID:           userID,
+		stats:            stats,
+		currentWordIndex: currentWordIndex,
+	}
+}
+
+func (u *User) IsEmpty() bool {
+	return (u == nil || (u.userID == "" && u.stats.IsEmpty() && u.currentWordIndex == 0))
 }

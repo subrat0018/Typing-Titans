@@ -35,3 +35,11 @@ func (s *StateMachine) CurrentState() State {
 	}
 	return s.currentState
 }
+
+func NewStateMachine(createdAt int64, startsAt int64, state State) *StateMachine {
+	return &StateMachine{
+		createdAt:    createdAt,
+		startsAt:     startsAt,
+		currentState: state,
+	}
+}
