@@ -30,6 +30,13 @@ func HandleGame(clientID string, event *request.Event) *response.GameResp {
 }
 
 func handleJoinEvent(clientID string) *response.GameResp {
+	if _, found := clientToGameMap[clientID]; found {
+		return &response.GameResp{
+			IsSuccess: true,
+			Message:   "You are already in a game",
+		}
+	}
+
 	for _, game := range currentGames {
 		if int(game.Limit()) == len(game.Users()) {
 			continue
@@ -47,7 +54,10 @@ func handleJoinEvent(clientID string) *response.GameResp {
 		users = append(users, dto.NewUser(clientID, userStats, 0))
 		game.SetUsers(users)
 		clientToGameMap[clientID] = game
-		return nil
+		return &response.GameResp{
+			IsSuccess: true,
+			Message:   "You have joined the game :))",
+		}
 	}
 
 	stateMachine := dto.NewStateMachine(time.Now().Unix(), 0, dto.StateCreate)
@@ -60,8 +70,12 @@ func handleJoinEvent(clientID string) *response.GameResp {
 	}
 	paragraph := getDefaultParagraph() // Will customize it later
 	game := dto.NewGame(stateMachine, []*dto.User{}, gameID.String(), paragraph, LIMIT)
+	clientToGameMap[clientID] = game
 	currentGames = append(currentGames, game)
-	return nil
+	return &response.GameResp{
+		IsSuccess: true,
+		Message:   "You have joined the game :))",
+	}
 }
 
 func handleUpdateEvent(clientID string, data *request.Data) *response.GameResp {
@@ -87,7 +101,6 @@ func handleUpdateEvent(clientID string, data *request.Data) *response.GameResp {
 	}
 
 	if user.Stats().IsFinished() {
-		fmt.Printf("User %v is spamming :(", clientID)
 		return &response.GameResp{
 			IsSuccess: true,
 			Message:   "You have finished the game",

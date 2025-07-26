@@ -43,9 +43,6 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp := service.HandleGame(clientID.String(), event)
-
-		fmt.Printf("Recieved: %+v\n", event)
-
 		err = conn.WriteMessage(websocket.TextMessage, []byte(resp.Message))
 	}
 }
