@@ -10,7 +10,15 @@ type Game struct {
 	id           string
 	paragraph    []string
 	limit        int64
+	gameTime     int64
 	mutex        *sync.Mutex
+}
+
+func (g *Game) GameTime() int64 {
+	if g == nil {
+		return 0
+	}
+	return g.gameTime
 }
 
 func (g *Game) StateMachine() *StateMachine {
@@ -61,6 +69,7 @@ func NewGame(
 	id string,
 	paragraph []string,
 	limit int64,
+	gameTime int64,
 ) *Game {
 	return &Game{
 		stateMachine: stateMachine,
@@ -69,6 +78,7 @@ func NewGame(
 		paragraph:    paragraph,
 		limit:        limit,
 		mutex:        &sync.Mutex{},
+		gameTime:     gameTime,
 	}
 }
 

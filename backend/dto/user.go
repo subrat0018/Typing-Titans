@@ -1,9 +1,19 @@
 package dto
 
+import "github.com/gorilla/websocket"
+
 type User struct {
 	userID           string
 	stats            *Stats
 	currentWordIndex int64
+	conn             *websocket.Conn
+}
+
+func (u *User) Conn() *websocket.Conn {
+	if u == nil {
+		return &websocket.Conn{}
+	}
+	return u.conn
 }
 
 func (u *User) UserID() string {
@@ -27,14 +37,15 @@ func (u *User) CurrentWordIndex() int64 {
 	return u.currentWordIndex
 }
 
-func NewUser(userID string, stats *Stats, currentWordIndex int64) *User {
+func NewUser(userID string, stats *Stats, currentWordIndex int64, conn *websocket.Conn) *User {
 	return &User{
 		userID:           userID,
 		stats:            stats,
 		currentWordIndex: currentWordIndex,
+		conn:             conn,
 	}
 }
 
 func (u *User) IsEmpty() bool {
-	return (u == nil || (u.userID == "" && u.stats.IsEmpty() && u.currentWordIndex == 0))
+	return (u == nil || (u.userID == "" && u.stats.IsEmpty() && u.currentWordIndex == 0 && u.conn == nil))
 }

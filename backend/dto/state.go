@@ -15,6 +15,20 @@ const (
 	StateEnd         State = "End"
 )
 
+func (s *StateMachine) SetCurrentState(state State) {
+	if s == nil {
+		s = &StateMachine{}
+	}
+	s.currentState = state
+}
+
+func (s *StateMachine) SetStartsAt(time int64) {
+	if s == nil {
+		s = &StateMachine{}
+	}
+	s.startsAt = time
+}
+
 func (s *StateMachine) CreatedAt() int64 {
 	if s == nil {
 		return 0

@@ -42,7 +42,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		resp := service.HandleGame(clientID.String(), event)
+		resp := service.HandleGame(clientID.String(), event, conn)
 		err = conn.WriteMessage(websocket.TextMessage, []byte(resp.Message))
 	}
 }
