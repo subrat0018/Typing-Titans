@@ -83,6 +83,9 @@ func NewGame(
 }
 
 func (g *Game) SetUsers(users []*User) {
+	if g == nil {
+		g = &Game{}
+	}
 	g.users = users
 }
 

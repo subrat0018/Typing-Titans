@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"fmt"
 	"sort"
 	"time"
 	"typing-titans/dto"
@@ -28,6 +29,13 @@ func RunCronJob() {
 		handleScoreUpdate()
 		handleBroadcastScores()
 		removeInactiveGames()
+		printCurrentGames()
+	}
+}
+
+func printCurrentGames() {
+	for _, game := range service.CurrentGames {
+		fmt.Printf("Game: %v is in state: %v createdAt: %v startsAt:%v numberOfUsers: %v\n", game.ID(), game.StateMachine().CurrentState(), game.StateMachine().CreatedAt(), game.StateMachine().StartsAt(), len(game.Users()))
 	}
 }
 
@@ -64,6 +72,7 @@ func handleInProgressUpdateState(game *dto.Game) {
 	if time.Now().Unix()-game.StateMachine().StartsAt() >= game.GameTime() {
 		game.StateMachine().SetCurrentState(dto.StateEnd)
 		handleGameEndBroadcast(game)
+		handleBroadcastScores() // Forcing one last broadcast
 	}
 }
 
@@ -91,11 +100,15 @@ func handleScoreUpdateForUser(user *dto.User) {
 
 func handleGameStartBroadcast(game *dto.Game) {
 	for _, user := range game.Users() {
+		fmt.Printf("Sending message\n")
 		conn := user.Conn()
-		conn.WriteJSON(&response.GameResp{
+		err := conn.WriteJSON(&response.GameResp{
 			IsSuccess: true,
 			Message:   "Game is started!!",
 		})
+		if err != nil {
+			fmt.Printf("error while sending game start msg, err: %v\n", err)
+		}
 	}
 }
 
@@ -111,7 +124,7 @@ func handleGameEndBroadcast(game *dto.Game) {
 
 func handleBroadcastScores() {
 	for _, game := range service.CurrentGames {
-		if game.StateMachine().CurrentState() != dto.StateCreate {
+		if game.StateMachine().CurrentState() != dto.StateInProgress {
 			continue
 		}
 		leaderBoard := calculateLeaderBoard(game.Users())

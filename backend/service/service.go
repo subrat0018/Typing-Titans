@@ -72,7 +72,8 @@ func handleJoinEvent(clientID string, conn *websocket.Conn) *response.GameResp {
 	}
 	paragraph := getDefaultParagraph() // Will customize it later
 	gameTime := GAMETIME               // Will add some customization to it
-	game := dto.NewGame(stateMachine, []*dto.User{}, gameID.String(), paragraph, LIMIT, int64(gameTime))
+	user := dto.NewUser(clientID, &dto.Stats{}, 0, conn)
+	game := dto.NewGame(stateMachine, []*dto.User{user}, gameID.String(), paragraph, LIMIT, int64(gameTime))
 	clientToGameMap[clientID] = game
 	CurrentGames = append(CurrentGames, game)
 	return &response.GameResp{

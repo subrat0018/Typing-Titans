@@ -33,6 +33,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			fmt.Println("Error while reading message")
+			return
 		}
 
 		event := &request.Event{}
